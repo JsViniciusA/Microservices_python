@@ -27,7 +27,7 @@ def listar_contatos():
     return jsonify(contatos)
 
 if __name__ == '__main__':
-    app_contatos.run(port=5000)
+    app_contatos.run(port=4200)
 
 # servico_compromissos.py
 import sqlite3
@@ -61,23 +61,23 @@ def listar_compromissos():
     # Obter informações de contato do serviço de contatos
     for compromisso in compromissos:
         if compromisso['contato_id']:
-            response = requests.get(f'http://localhost:5000/contatos/{compromisso["contato_id"]}')
+            response = requests.get(f'  http://localhost:4200/contatos/{compromisso["contato_id"]}')
             if response.status_code == 200:
                 compromisso['contato'] = response.json()
     
     return jsonify(compromissos)
 
 if __name__ == '__main__':
-    app_compromissos.run(port=5001)
+    app_compromissos.run(port=4201)
 
 # cliente.py
 import requests
 
-def adicionar_contato():
+def adicionar_contato(self, nome, telefone, email):
     nome = input("Nome do contato: ")
     telefone = input("Telefone do contato: ")
     email = input("Email do contato: ")
-    response = requests.post('http://localhost:5000/contatos', json={'nome': nome, 'telefone': telefone, 'email': email})
+    response = requests.post('  http://localhost:4200/contatos', json={'nome': nome, 'telefone': telefone, 'email': email})
     print(f"Contato adicionado com ID: {response.json()['id']}")
 
 def adicionar_compromisso():
@@ -87,17 +87,17 @@ def adicionar_compromisso():
     data = {'descricao': descricao, 'data': data}
     if contato_id:
         data['contato_id'] = int(contato_id)
-    response = requests.post('http://localhost:5001/compromissos', json=data)
+    response = requests.post('  http://localhost:4201/compromissos', json=data)
     print(f"Compromisso adicionado com ID: {response.json()['id']}")
 
 def listar_contatos():
-    response = requests.get('http://localhost:5000/contatos')
+    response = requests.get('  http://localhost:4201/contatos')
     contatos = response.json()
     for contato in contatos:
         print(f"ID: {contato['id']}, Nome: {contato['nome']}, Telefone: {contato['telefone']}, Email: {contato['email']}")
 
 def listar_compromissos():
-    response = requests.get('http://localhost:5001/compromissos')
+    response = requests.get('  http://localhost:4201/compromissos')
     compromissos = response.json()
     for compromisso in compromissos:
         contato = compromisso.get('contato', {})

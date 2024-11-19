@@ -6,18 +6,25 @@ app_contatos = Flask(__name__)
 
 def get_db():
     db = sqlite3.connect('contatos.db')
-    db.execute('CREATE TABLE IF NOT EXISTS contatos (id INTEGER PRIMARY KEY, nome TEXT NOT NULL, telefone TEXT NOT NULL, email TEXT NOT NULL)')
+    cursor = db.cursor()
+    cursor.execute('CREATE TABLE IF NOT EXISTS contatos (id INTEGER PRIMARY KEY, nome TEXT NOT NULL, telefone TEXT NOT NULL, email TEXT NOT NULL)''')
     db.commit()
     return db
 
 @app_contatos.route('/contatos', methods=['POST'])
 def adicionar_contato():
-    data = request.json
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute('INSERT INTO contatos (nome, telefone, email) VALUES (?, ?, ?)', (data['nome'], data['telefone'], data['email']))
-    db.commit()
-    return jsonify({'id': cursor.lastrowid}), 201
+    try:
+        data = request.json
+        db = get_db()
+        cursor = db.cursor()
+        print("Dados recebidos:", data)  # Verificar os dados recebidos
+        cursor.execute('INSERT INTO contatos (nome, telefone, email) VALUES (?, ?, ?)', (data['nome'], data['telefone'], data['email']))
+        db.commit()
+        print("Contato adicionado com sucesso")  # Verifica se o commit foi realizado
+        return jsonify({'id': cursor.lastrowid}), 201
+    except Exception as e:
+        print("Erro ao adicionar contato:", e)  # Exibe qualquer erro ocorrido
+        return jsonify({'error': str(e)}), 500
 
 @app_contatos.route('/contatos', methods=['GET'])
 def listar_contatos():

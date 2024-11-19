@@ -54,6 +54,17 @@ class CamadaDados:
         ''')
         return cursor.fetchall()
 
+    def listar_compromissos_por_data(self, data_inicio, data_fim):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            SELECT c.id, c.descricao, c.data, co.id, co.nome
+            FROM compromissos c
+            LEFT JOIN contatos co ON c.contato_id = co.id
+            WHERE c.data BETWEEN ? AND ?
+        ''', (data_inicio, data_fim))
+        return cursor.fetchall()
+
+# camada_negocios.py
 # camada_negocios.py
 from camada_dados import CamadaDados
 
@@ -86,6 +97,19 @@ class CamadaNegocios:
             for c in compromissos
         ]
 
+    # Método para buscar compromissos por intervalo de datas
+    def listar_compromissos_por_data(self, data_inicio, data_fim):
+        compromissos = self.dados.listar_compromissos_por_data(data_inicio, data_fim)
+        return [
+            {
+                'id': c[0],
+                'descricao': c[1],
+                'data': c[2],
+                'contato': {'id': c[3], 'nome': c[4]} if c[3] else None
+            }
+            for c in compromissos
+        ]
+
 # camada_apresentacao.py
 from camada_negocios import CamadaNegocios
 
@@ -98,7 +122,8 @@ class CamadaApresentacao:
         print("2. Adicionar Compromisso")
         print("3. Listar Contatos")
         print("4. Listar Compromissos")
-        print("5. Sair")
+        print("5. Buscar Compromissos por Data")
+        print("6. Sair")
 
     def adicionar_contato(self):
         nome = input("Nome do contato: ")
@@ -132,6 +157,15 @@ class CamadaApresentacao:
             print(f"ID: {compromisso['id']}, Descrição: {compromisso['descricao']}, Data: {compromisso['data']}, "
                   f"Contato: {contato['nome'] if contato else 'N/A'}")
 
+    def buscar_compromissos_por_data(self):
+        data_inicio = input("Digite a data de início (YYYY-MM-DD HH:MM): ")
+        data_fim = input("Digite a data de fim (YYYY-MM-DD HH:MM): ")
+        compromissos = self.negocios.listar_compromissos_por_data(data_inicio, data_fim)
+        for compromisso in compromissos:
+            contato = compromisso['contato']
+            print(f"ID: {compromisso['id']}, Descrição: {compromisso['descricao']}, Data: {compromisso['data']}, "
+                  f"Contato: {contato['nome'] if contato else 'N/A'}")
+
     def executar(self):
         while True:
             self.exibir_menu()
@@ -146,6 +180,8 @@ class CamadaApresentacao:
             elif opcao == '4':
                 self.listar_compromissos()
             elif opcao == '5':
+                self.buscar_compromissos_por_data()
+            elif opcao == '6':
                 print("Encerrando o programa...")
                 break
             else:

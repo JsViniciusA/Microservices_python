@@ -54,6 +54,16 @@ class Agenda:
         ''')
         return cursor.fetchall()
 
+    def pesquisar_compromissos(self, data_inicio, data_fim):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            SELECT c.descricao, c.data, co.nome
+            FROM compromissos c
+            LEFT JOIN contatos co ON c.contato_id = co.id
+            WHERE c.data BETWEEN ? AND ?
+        ''', (data_inicio, data_fim))
+        return cursor.fetchall()
+
 def main():
     agenda = Agenda()
 
@@ -62,7 +72,8 @@ def main():
         print("2. Adicionar Compromisso")
         print("3. Listar Contatos")
         print("4. Listar Compromissos")
-        print("5. Sair")
+        print("5. Pesquisar Compromissos")
+        print("6. Sair")
 
         opcao = input("Escolha uma opção: ")
 
@@ -84,8 +95,21 @@ def main():
             compromissos = agenda.listar_compromissos()
             for compromisso in compromissos:
                 print(f"Descrição: {compromisso[0]}, Data: {compromisso[1]}, Contato: {compromisso[2] or 'N/A'}")
-
         elif opcao == '5':
+            data_inicio = input("Data de início (YYYY-MM-DD HH:MM): ")
+            data_fim = input("Data de fim (YYYY-MM-DD HH:MM): ")
+            try:
+                resultados = agenda.pesquisar_compromissos(data_inicio, data_fim)
+                if resultados:
+                    print("\nCompromissos encontrados:")
+                    for compromisso in resultados:
+                        print(f"Descrição: {compromisso[0]}, Data: {compromisso[1]}, Contato: {compromisso[2] or 'N/A'}")
+                else:
+                    print("Nenhum compromisso encontrado no intervalo especificado.")
+            except sqlite3.Error as e:
+                print(f"Erro ao pesquisar compromissos: {e}")
+        elif opcao == '6':
+            print("Encerrando o programa...")
             break
         else:
             print("Opção inválida. Tente novamente.")
